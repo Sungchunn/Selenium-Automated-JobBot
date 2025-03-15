@@ -5,10 +5,21 @@ import yaml
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 
+def safe_find_element_text(parent, by, selector, default="N/A"):
+    try:
+        return parent.find_element(by, selector).text
+    except NoSuchElementException:
+        return default
+
+def safe_find_element_attr(parent, by, selector, attr, default="N/A"):
+    try:
+        return parent.find_element(by, selector).get_attribute(attr)
+    except NoSuchElementException:
+        return default
 
 def scrape_jobs():
-
     # Load yaml file
     settings_path = os.path.join(os.getcwd(), "config", "jobs.yaml")
     with open(settings_path, "r") as f:
@@ -19,10 +30,9 @@ def scrape_jobs():
     driver = webdriver.Chrome(service=service)
     jobs_data = []
 
-    # Loop through each job sites listed in the yaml file
+    # Loop through each job site listed in the yaml file
     for board in config["job_boards"]:
         search_url = board["search_url"]
-
         driver.get(search_url)
         time.sleep(3)
 
@@ -34,20 +44,9 @@ def scrape_jobs():
         job_cards = driver.find_elements(By.CSS_SELECTOR, job_card_selector)
 
         for card in job_cards:
-            try:
-                title = card.find_element(By.CSS_SELECTOR, job_title_selector).text
-            except:
-                title = "N/A"
-
-            try:
-                company = card.find_element(By.CSS_SELECTOR, job_company_selector).text
-            except:
-                company = "N/A"
-
-            try:
-                link = card.find_element(By.CSS_SELECTOR, job_link_selector).get_attribute("href")
-            except:
-                link = "N/A"
+            title = safe_find_element_text(card, By.CSS_SELECTOR, job_title_selector)
+            company = safe_find_element_text(card, By.CSS_SELECTOR, job_company_selector)
+            link = safe_find_element_attr(card, By.CSS_SELECTOR, job_link_selector, "href")
 
             jobs_data.append({
                 "title": title,
@@ -55,10 +54,9 @@ def scrape_jobs():
                 "link": link,
                 "source": board["name"]
             })
-
     driver.quit()
 
-    # Output result to .scv
+    # Output result to CSV
     data_dir = os.path.join(os.getcwd(), "data")
     os.makedirs(data_dir, exist_ok=True)
     csv_path = os.path.join(data_dir, "job_listings.csv")
@@ -71,7 +69,6 @@ def scrape_jobs():
         writer.writerows(jobs_data)
 
     print(f"Scraped {len(jobs_data)} new jobs. Data saved to {csv_path}")
-
 
 if __name__ == "__main__":
     scrape_jobs()
