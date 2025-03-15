@@ -1,0 +1,29 @@
+.
+├── src/                        # Source code directory
+│   ├── main.py                 # Main script
+│   ├── scraper.py              # Job scraping logic
+│   ├── autofill.py             # Auto-fill job applications
+│   ├── notify.py               # Notifications via Telegram/SMS
+│   ├── utils.py                # Helper functions
+│
+├── drivers/                     # Store web drivers here
+│   ├── chromedriver-mac-arm64/
+│   │   ├── LICENSE.chromedriver
+│   │   ├── THIRD_PARTY_NOTICES.chromedriver
+│   │   ├── chromedriver
+│
+├── data/                        # Store scraped job listings or logs
+│   ├── job_listings.csv
+│   ├── applied_jobs.csv
+│
+├── config/                      # Store settings, environment variables
+│   ├── credentials.env          # Stores login credentials (ignored in Git)
+│   ├── settings.yaml            # Stores job search filters
+│
+├── .venv/                       # Virtual environment (ignored in Git)
+│
+├── .idea/                       # JetBrains (PyCharm) project settings (ignored in Git)
+│
+├── .gitignore                   # Files to ignore in Git
+├── requirements.txt             # Dependencies (Selenium, Pandas, etc.)
+├── README.md                    # Documentation

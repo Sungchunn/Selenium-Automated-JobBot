@@ -1,0 +1,25 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# IDE files
+.idea/
+.vscode/
+
+# System files
+.DS_Store
+
+# Logs & Debug Files
+*.log
+logs/
+
+# Environment Variables & Credentials
+config/credentials.env
+.env
+
+# Web Drivers (optional, since each OS may need different versions)
+drivers/chromedriver-mac-arm64/chromedriver
