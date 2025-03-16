@@ -1,9 +1,9 @@
+
 import os
 import time
 import csv
 import yaml
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
@@ -20,22 +20,20 @@ def safe_find_element_attr(parent, by, selector, attr, default="N/A"):
         return default
 
 def save_jobs_to_csv(csv_path, jobs_data):
-    # Check if CSV exists, read existing rows
     file_exists = os.path.isfile(csv_path)
     existing_links = set()
+
     if file_exists:
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 existing_links.add(row["link"])
 
-    # Filter new jobs
     unique_jobs = []
     for job in jobs_data:
         if job["link"] not in existing_links:
             unique_jobs.append(job)
 
-    # Append only unique jobs
     with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=["title", "company", "link", "source"])
         if not file_exists:
@@ -50,9 +48,9 @@ def scrape_jobs():
     with open(settings_path, "r") as f:
         config = yaml.safe_load(f)
 
-    driver_path = config["chrome_driver_path"]
-    service = Service(executable_path=driver_path)
-    driver = webdriver.Chrome(service=service)
+    # Instead of Chrome, we use Safari's built-in driver
+    driver = webdriver.Safari()
+
     jobs_data = []
 
     # Loop through each job site listed in the yaml file
@@ -81,10 +79,11 @@ def scrape_jobs():
             })
 
     driver.quit()
+
+    # Save to CSV
     data_dir = os.path.join(os.getcwd(), "data")
     os.makedirs(data_dir, exist_ok=True)
     csv_path = os.path.join(data_dir, "job_listings.csv")
-
     save_jobs_to_csv(csv_path, jobs_data)
 
 if __name__ == "__main__":
