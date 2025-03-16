@@ -19,6 +19,31 @@ def safe_find_element_attr(parent, by, selector, attr, default="N/A"):
     except NoSuchElementException:
         return default
 
+def save_jobs_to_csv(csv_path, jobs_data):
+    # Check if CSV exists, read existing rows
+    file_exists = os.path.isfile(csv_path)
+    existing_links = set()
+    if file_exists:
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                existing_links.add(row["link"])
+
+    # Filter new jobs
+    unique_jobs = []
+    for job in jobs_data:
+        if job["link"] not in existing_links:
+            unique_jobs.append(job)
+
+    # Append only unique jobs
+    with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["title", "company", "link", "source"])
+        if not file_exists:
+            writer.writeheader()
+        writer.writerows(unique_jobs)
+
+    print(f"Scraped {len(jobs_data)} new jobs, wrote {len(unique_jobs)} unique jobs.")
+
 def scrape_jobs():
     # Load yaml file
     settings_path = os.path.join(os.getcwd(), "config", "jobs.yaml")
@@ -54,21 +79,13 @@ def scrape_jobs():
                 "link": link,
                 "source": board["name"]
             })
-    driver.quit()
 
-    # Output result to CSV
+    driver.quit()
     data_dir = os.path.join(os.getcwd(), "data")
     os.makedirs(data_dir, exist_ok=True)
     csv_path = os.path.join(data_dir, "job_listings.csv")
 
-    file_exists = os.path.isfile(csv_path)
-    with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=["title", "company", "link", "source"])
-        if not file_exists:
-            writer.writeheader()
-        writer.writerows(jobs_data)
-
-    print(f"Scraped {len(jobs_data)} new jobs. Data saved to {csv_path}")
+    save_jobs_to_csv(csv_path, jobs_data)
 
 if __name__ == "__main__":
     scrape_jobs()
